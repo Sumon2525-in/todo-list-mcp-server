@@ -13,6 +13,10 @@
 
 Este é um **servidor MCP (Model Context Protocol)** completo que implementa um sistema de gerenciamento de tarefas (Todo List) com validação robusta usando **TypeScript** e **Zod**. O servidor se integra diretamente com o **Claude Desktop**, permitindo que você gerencie suas tarefas através de conversas naturais com o Claude.
 
+### Tutorial - Passo a Passo!
+
+Quer aprender a desenvolver essa aplicação e aprender também sobre MCP? Está disponível o tutorial passo a passo, para você **[AQUI](https://github.com/glaucia86/todo-list-mcp-server/blob/main/TUTORIAL.md)**
+
 ### 🌟 Por que usar MCP?
 
 O **Model Context Protocol** é um protocolo desenvolvido pela Anthropic que permite aos assistentes de IA se conectarem com ferramentas e recursos externos de forma padronizada. Com este projeto, você pode:
