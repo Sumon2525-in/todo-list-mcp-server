@@ -2,7 +2,7 @@ import {
   DateSchema, 
   NonEmptyStringSchema, 
   UuiSchema 
-} from "./common.schemas";
+} from "./common.schemas.js";
 import { z } from 'zod';
 
 export const TodoSchema = z.object({

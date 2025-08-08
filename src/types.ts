@@ -7,8 +7,8 @@ import {
   TodoListResponseSchema, 
   TodoSchema, 
   UpdateTodoSchema 
-} from './schemas/todo.schemas';
-import { ErrorResponseSchema, TodoStatsSchema } from './schemas/common.schemas';
+} from './schemas/todo.schemas.js';
+import { ErrorResponseSchema, TodoStatsSchema } from './schemas/common.schemas.js';
 
 export type Todo = z.infer<typeof TodoSchema>;
 export type CreateTodoRequest = z.infer<typeof CreateTodoSchema>;

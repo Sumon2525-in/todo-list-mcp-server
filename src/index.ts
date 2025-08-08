@@ -16,10 +16,7 @@ async function main() {
   }
 }
 
-// Execute apenas se for o arquivo principal
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main().catch((error) => {
-    console.error('💥 Erro não tratado:', error);
-    process.exit(1);
-  });
-}
+main().catch((error) => {
+  console.error('💥 Erro não tratado:', error);
+  process.exit(1);
+});

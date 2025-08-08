@@ -8,7 +8,7 @@ import {
   GetPromptRequestSchema,
   ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { TodoService } from "./services/todo.services";
+import { TodoService } from "./services/todo.services.js";
 import {
   CreateTodoSchema,
   UpdateTodoSchema,
