@@ -36,7 +36,7 @@ export const DeleteTodoSchema = z.object({
   id: UuiSchema
 });
 
-export const ListTodoSchema = z.object({
+export const ListTodosSchema = z.object({
   status: z.enum(['all', 'completed', 'pending']).default('all'),
   priority: z.enum(['low', 'medium', 'high']).optional(),
   tags: z.array(z.string()).optional(),
