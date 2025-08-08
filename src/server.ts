@@ -830,7 +830,7 @@ export class TodoMCPServer {
 
     // Keep the process running
     process.on("SIGINT", async () => {
-      console.error("🛑 Encerrando MCP Todo Server");
+      console.error("🛑 Encerrando Todo List MCP Server");
       await this.server.close();
       process.exit(0);
     });
