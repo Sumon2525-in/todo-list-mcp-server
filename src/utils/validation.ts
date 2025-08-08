@@ -36,3 +36,50 @@ export async function validateDataAsync<T>(schema: z.ZodSchema<T>, data: unknown
     throw error;
   }
 }
+
+export function sanitizeInput(data: unknown): unknown {
+  if (typeof data === 'string') {
+    return data.trim();
+  }
+  
+  if (Array.isArray(data)) {
+    return data.map(sanitizeInput);
+  }
+  
+  if (data && typeof data === 'object') {
+    const sanitized: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(data)) {
+      sanitized[key] = sanitizeInput(value);
+    }
+    return sanitized;
+  }
+  
+  return data;
+}
+
+export function createErrorResponse(
+  error: unknown, 
+  operation: string
+): { error: string; details?: string; code?: string } {
+  if (error instanceof ValidationError) {
+    return {
+      error: `Erro de validação em ${operation}`,
+      details: error.message,
+      code: error.code
+    };
+  }
+  
+  if (error instanceof Error) {
+    return {
+      error: `Erro em ${operation}`,
+      details: error.message,
+      code: 'OPERATION_ERROR'
+    };
+  }
+  
+  return {
+    error: `Erro desconhecido em ${operation}`,
+    details: String(error),
+    code: 'UNKNOWN_ERROR'
+  };
+}
