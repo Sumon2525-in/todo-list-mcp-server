@@ -1,4 +1,4 @@
-# 📋 MCP Todo Server - Tutorial Completo
+# 📋 MCP Todo List Server - Tutorial Completo
 
 <div align="center">
 
