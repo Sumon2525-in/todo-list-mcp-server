@@ -51,8 +51,16 @@ O **Model Context Protocol** é um protocolo desenvolvido pela Anthropic que per
 
 ## 🏗️ Arquitetura do Projeto
 
+O projeto segue os **princípios SOLID** para garantir código limpo, manutenível e escalável:
+
 ```
 src/
+├── config/                     # ⚙️ Configurações
+│   └── toolDefinitions.ts     # 📋 Definições centralizadas das ferramentas MCP
+├── handlers/                   # 🎯 Handlers especializados (SOLID)
+│   ├── toolHandlers.ts        # 🔧 Gerencia operações de ferramentas
+│   ├── resourceHandlers.ts    # 📊 Gerencia recursos de dados
+│   └── promptHandlers.ts      # 💡 Gerencia templates de prompt
 ├── schemas/                    # 📋 Validações Zod
 │   ├── common.schemas.ts      # Schemas base (UUID, Date, etc.)
 │   └── todo.schemas.ts        # Schemas específicos de tarefas
@@ -61,22 +69,131 @@ src/
 ├── utils/                      # 🛠️ Utilitários
 │   └── validation.ts          # Helpers de validação
 ├── types.ts                    # 📝 Tipos TypeScript
-├── server.ts                   # 🖥️ Servidor MCP principal
+├── server.ts                   # 🖥️ Servidor MCP principal (orquestração)
 └── index.ts                    # 🚀 Ponto de entrada
 ```
+
+### 🏛️ **Princípios SOLID Aplicados**
+
+#### **1. Single Responsibility Principle (SRP)**
+Cada classe tem uma única responsabilidade:
+- **ToolHandlers**: Apenas operações de ferramentas (CRUD)
+- **ResourceHandlers**: Apenas recursos de dados (visualização)
+- **PromptHandlers**: Apenas templates de prompt (análise)
+- **TodoMCPServer**: Apenas orquestração e configuração do servidor
+
+#### **2. Open/Closed Principle (OCP)**
+- Cada handler pode ser estendido sem modificar código existente
+- Novos tipos de operações podem ser adicionados facilmente
+- `TOOL_DEFINITIONS` permite adicionar ferramentas sem tocar nos handlers
+
+#### **3. Liskov Substitution Principle (LSP)**
+- Todos os handlers implementam contratos bem definidos
+- Podem ser substituídos por implementações alternativas
+- Interface consistente para operações MCP
+
+#### **4. Interface Segregation Principle (ISP)**
+- Cada handler tem interface específica para sua responsabilidade
+- Não há dependências desnecessárias entre componentes
+- Separação clara entre tools, resources e prompts
+
+#### **5. Dependency Inversion Principle (DIP)**
+- Handlers dependem da abstração `TodoService`
+- Servidor principal injeta dependências nos handlers
+- Facilita testes e substituição de implementações
 
 ### 🔄 **Fluxo de Dados**
 
 ```mermaid
 graph TB
-    A[Claude Desktop] --> B[MCP Server]
-    B --> C[Validation Layer - Zod]
-    C --> D[Todo Service]
-    D --> E[In-Memory Storage]
-    E --> D
-    D --> C
-    C --> B
+    A[Claude Desktop] --> B[TodoMCPServer]
+    B --> C{Request Type}
+    
+    C -->|Tools| D[ToolHandlers]
+    C -->|Resources| E[ResourceHandlers]  
+    C -->|Prompts| F[PromptHandlers]
+    
+    D --> G[Validation Layer - Zod]
+    E --> G
+    F --> G
+    
+    G --> H[TodoService]
+    H --> I[In-Memory Storage]
+    
+    I --> H
+    H --> G
+    G --> D
+    G --> E
+    G --> F
+    
+    D --> B
+    E --> B
+    F --> B
     B --> A
+    
+    style B fill:#e1f5fe
+    style D fill:#f3e5f5
+    style E fill:#e8f5e8
+    style F fill:#fff3e0
+    style H fill:#fce4ec
+```
+
+### 🧩 **Responsabilidades dos Componentes**
+
+#### **TodoMCPServer (Orquestrador)**
+```typescript
+class TodoMCPServer {
+  private toolHandlers: ToolHandlers;      // Delega operações CRUD
+  private resourceHandlers: ResourceHandlers; // Delega recursos
+  private promptHandlers: PromptHandlers;     // Delega prompts
+  
+  // Apenas configura e roteia requisições
+  setupHandlers(): void {
+    this.server.setRequestHandler(CallToolRequestSchema, 
+      (req) => this.toolHandlers.handleCallTool(req));
+    // ...
+  }
+}
+```
+
+#### **ToolHandlers (Operações CRUD)**
+```typescript
+class ToolHandlers {
+  handleCallTool(request): Promise<CallToolResult> {
+    switch (name) {
+      case "create_todo": return this.handleCreateTodo(request);
+      case "update_todo": return this.handleUpdateTodo(request);
+      case "delete_todo": return this.handleDeleteTodo(request);
+      // ...
+    }
+  }
+}
+```
+
+#### **ResourceHandlers (Dados)**
+```typescript
+class ResourceHandlers {
+  handleReadResource(request): Promise<ReadResourceResult> {
+    switch (uri) {
+      case "todo://all": return this.handleAllTodos(uri);
+      case "todo://stats": return this.handleTodoStats(uri);
+      // ...
+    }
+  }
+}
+```
+
+#### **PromptHandlers (Templates)**
+```typescript
+class PromptHandlers {
+  handleGetPrompt(request): Promise<GetPromptResult> {
+    switch (name) {
+      case "todo-summary": return this.handleTodoSummary(args);
+      case "todo-prioritization": return this.handleTodoPrioritization(args);
+      // ...
+    }
+  }
+}
 ```
 
 ## 📋 Pré-requisitos
@@ -392,21 +509,22 @@ Claude: [Usa list_todos com filtros status=pending, priority=high]
 
 ## 🔧 Desenvolvimento e Personalização
 
+### **Benefícios da Arquitetura SOLID**
+
+✅ **Manutenibilidade**: Cada arquivo tem responsabilidade específica
+✅ **Testabilidade**: Handlers podem ser testados independentemente  
+✅ **Escalabilidade**: Fácil adicionar novas funcionalidades
+✅ **Reutilização**: Componentes podem ser reutilizados
+✅ **Debugging**: Erros são isolados por responsabilidade
+
 ### **Estrutura para Extensão**
 
+#### **1. Adicionando Nova Ferramenta**
 ```typescript
-// Adicionar novo campo no schema
-export const TodoSchema = z.object({
-  // ... campos existentes
-  deadline?: z.date().optional(),        // Nova: Data limite
-  project?: z.string().optional(),       // Nova: Projeto
-  assignee?: z.string().optional(),      // Nova: Responsável
-});
-
-// Criar nova ferramenta
+// 1. Definir em config/toolDefinitions.ts
 {
   name: "set_deadline",
-  description: "Definir prazo para tarefa",
+  description: "Definir prazo para tarefa", 
   inputSchema: {
     type: "object",
     properties: {
@@ -416,6 +534,49 @@ export const TodoSchema = z.object({
     required: ["id", "deadline"]
   }
 }
+
+// 2. Implementar em handlers/toolHandlers.ts
+private async handleSetDeadline(request: CallToolRequest): Promise<CallToolResult> {
+  const { args } = request.params;
+  const validatedData = validateData(SetDeadlineSchema, args);
+  // Implementar lógica...
+}
+
+// 3. Adicionar no switch do handleCallTool
+case "set_deadline": return this.handleSetDeadline(request);
+```
+
+#### **2. Adicionando Novo Recurso**
+```typescript
+// 1. Adicionar definição em resourceHandlers.ts
+{
+  uri: "todo://overdue",
+  mimeType: "application/json", 
+  name: "Overdue Todos",
+  description: "Tasks past their deadline"
+}
+
+// 2. Implementar handler
+case "todo://overdue":
+  const overdueTodos = this.todoService.getOverdueTodos();
+  return { contents: [{ uri, mimeType: "application/json", text: JSON.stringify(overdueTodos, null, 2) }] };
+```
+
+#### **3. Adicionando Novo Prompt**
+```typescript
+// 1. Definir em promptHandlers.ts
+{
+  name: "deadline-analysis",
+  description: "Analisa prazos das tarefas",
+  arguments: [
+    { name: "timeframe", description: "Período de análise", required: false }
+  ]
+}
+
+// 2. Implementar handler
+case "deadline-analysis":
+  const analysis = this.generateDeadlineAnalysis(args);
+  return { messages: [{ role: "user", content: { type: "text", text: analysis }}] };
 ```
 
 ### **Comandos de Desenvolvimento**
@@ -425,13 +586,46 @@ export const TodoSchema = z.object({
 npm run dev
 
 # Compilar apenas
-npm run build
+npm run build  
 
 # Validar TypeScript sem compilar
 npm run validate
 
 # Testar servidor
 npm start
+
+# Executar testes unitários (quando implementados)
+npm test
+```
+
+### **Testando Handlers Individualmente**
+
+```typescript
+// Exemplo de teste para ToolHandlers
+import { ToolHandlers } from '../src/handlers/toolHandlers';
+import { TodoService } from '../src/services/todo.services';
+
+describe('ToolHandlers', () => {
+  let toolHandlers: ToolHandlers;
+  let todoService: TodoService;
+  
+  beforeEach(() => {
+    todoService = new TodoService();
+    toolHandlers = new ToolHandlers(todoService);
+  });
+  
+  test('should create todo successfully', async () => {
+    const request = {
+      params: {
+        name: 'create_todo',
+        arguments: { title: 'Test Todo', priority: 'high' }
+      }
+    };
+    
+    const result = await toolHandlers.handleCallTool(request);
+    expect(result.content[0].text).toContain('Todo criado com sucesso');
+  });
+});
 ```
 
 ## 🐛 Troubleshooting
