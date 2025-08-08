@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "todo-server": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "C:\\Users\\glauc\\OneDrive\\Documents\\Labs\\todo-list-mcp-server"
+    }
+  }
+}
