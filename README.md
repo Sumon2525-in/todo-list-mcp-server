@@ -1,9 +1,13 @@
 # 📋 MCP Todo Server - Tutorial Completo
 
+<div align="center">
+
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
 ![Zod](https://img.shields.io/badge/Zod-FF4785?style=for-the-badge&logo=zod&logoColor=white)
 ![MCP](https://img.shields.io/badge/MCP-Protocol-blue?style=for-the-badge)
+
+</div>
 
 ## 🎯 O que é este projeto?
 
